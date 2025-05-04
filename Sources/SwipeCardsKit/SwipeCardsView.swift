@@ -8,7 +8,7 @@
 import SwiftUI
 
 public struct CardSwipeView<Item: Identifiable, Content: View>: View {
-    @StateObject private var configuration = Configuration<Item>()
+    @State private var configuration = Configuration<Item>()
     @State private var items: [Item]
     @State private var poppedItem: Item?
     @State private var poppedOffset: CGFloat = 0

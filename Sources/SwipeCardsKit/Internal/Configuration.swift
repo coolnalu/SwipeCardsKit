@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-final class Configuration<Item: Identifiable>: ObservableObject {
-    @Published var triggerThreshold: CGFloat = 150
-    @Published var onSwipeEnd: ((Item, CardSwipeDirection) -> Void)?
-    @Published var onNoMoreCardsLeft: (() -> Void)?
+final class Configuration<Item: Identifiable> {
+    var triggerThreshold: CGFloat = 150
+    var onSwipeEnd: ((Item, CardSwipeDirection) -> Void)?
+    var onNoMoreCardsLeft: (() -> Void)?
     let visibleCount = 4
 }
