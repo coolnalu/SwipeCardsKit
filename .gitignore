@@ -1,8 +1,47 @@
+# Xcode
 .DS_Store
+*.swp
+*.lock
+profile
+xcuserdata/
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
 /.build
 /Packages
-xcuserdata/
-DerivedData/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+.swiftpm/config
+.swiftpm/.build
+
+# CocoaPods (in case you use it alongside SPM)
+Pods/
+*.xcworkspace
+
+# Carthage (in case you use it alongside SPM)
+Carthage/Build/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+iOSInjectionProject/
+
+# Other
 .netrc
+.env
+.env.*
+*.xcarchive
