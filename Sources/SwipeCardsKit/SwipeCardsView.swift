@@ -8,30 +8,22 @@
 import SwiftUI
 
 public struct CardSwipeView<Item: Identifiable, Content: View>: View {
+    @StateObject private var configuration = Configuration<Item>()
     @State private var items: [Item]
     @State private var poppedItem: Item?
     @State private var poppedOffset: CGFloat = 0
     @State private var poppedDirection: CardSwipeDirection = .idle
     @State private var lastDirection: CardSwipeDirection = .idle
     @State private var offsetX: CGFloat = 0
-    @State private var appear = false
     
-    private let visibleCount = 4
-    private let triggerThreshold: CGFloat = 150
     private let content: (Item, _ fraction: CGFloat, _ isRight: CardSwipeDirection) -> Content
-    private let onSwipeEnd: ((Item, CardSwipeDirection) -> Void)?
-    private let onNoMoreCardsLeft: (() -> Void)?
 
     public init(
         items: [Item],
-        @ViewBuilder content: @escaping (Item, _ fraction: CGFloat, _ isRight: CardSwipeDirection) -> Content,
-        onSwipeEnd: ((Item, CardSwipeDirection) -> Void)? = nil,
-        onNoMoreCardsLeft: (() -> Void)? = nil
+        @ViewBuilder content: @escaping (Item, _ fraction: CGFloat, _ isRight: CardSwipeDirection) -> Content
     ) {
         self._items = State(wrappedValue: items)
         self.content = content
-        self.onSwipeEnd = onSwipeEnd
-        self.onNoMoreCardsLeft = onNoMoreCardsLeft
     }
 
     private var swipeGesture: some Gesture {
@@ -44,7 +36,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
                 }
             }
             .onEnded { value in
-                if abs(value.translation.width) < triggerThreshold {
+                if abs(value.translation.width) < configuration.triggerThreshold {
                     withAnimation(.bouncy) {
                         offsetX = 0
                     }
@@ -53,7 +45,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
                     poppedDirection = lastDirection
                     poppedItem = items.removeFirst()
                     if let poppedItem {
-                        onSwipeEnd?(poppedItem, lastDirection)
+                        configuration.onSwipeEnd?(poppedItem, lastDirection)
                     }
                     offsetX = 0
                 }
@@ -62,12 +54,17 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
 
     public var body: some View {
         ZStack {
-            ForEach(Array(items.prefix(visibleCount).enumerated()), id: \.element.id) { index, item in
-                let fraction = index == 0 ? min(abs(offsetX) / triggerThreshold, 1) : 0
-
+            ForEach(Array(items.prefix(configuration.visibleCount).enumerated()), id: \.element.id) { index, item in
+                let fraction = index == 0 ? min(abs(offsetX) / configuration.triggerThreshold, 1) : 0
+                
                 content(item, fraction, lastDirection)
-                    .modifier(CardSwipeEffect(index: index, offsetX: offsetX, triggerThreshold: triggerThreshold))
-                    .modifier(CardAppearEffect(appear: appear, index: index))
+                    .modifier(
+                        CardSwipeEffect(
+                            index: index,
+                            offsetX: offsetX,
+                            triggerThreshold: configuration.triggerThreshold
+                        )
+                    )
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -75,7 +72,13 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
         .overlay {
             if let poppedItem {
                 content(poppedItem, 1, poppedDirection)
-                    .modifier(CardSwipeEffect(index: 0, offsetX: poppedOffset, triggerThreshold: triggerThreshold))
+                    .modifier(
+                        CardSwipeEffect(
+                            index: 0,
+                            offsetX: poppedOffset,
+                            triggerThreshold: configuration.triggerThreshold
+                        )
+                    )
                     .id(poppedItem.id)
                     .onAppear {
                         if #available(iOS 17.0, *) {
@@ -85,7 +88,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
                                 self.poppedItem = nil
                                 
                                 if items.isEmpty {
-                                    onNoMoreCardsLeft?()
+                                    configuration.onNoMoreCardsLeft?()
                                 }
                             }
                         } else {
@@ -99,7 +102,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
                                 self.poppedItem = nil
                                 
                                 if items.isEmpty {
-                                    onNoMoreCardsLeft?()
+                                    configuration.onNoMoreCardsLeft?()
                                 }
                             }
                         }
@@ -107,88 +110,22 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
             }
         }
         .gesture(swipeGesture)
-        .rotation3DEffect(.degrees(appear ? 0 : -30), axis: (1, 0, 0))
-        .offset(y: appear ? 0 : 280)
-        .onAppear {
-            withAnimation(.bouncy) {
-                appear = true
-            }
-        }
     }
 }
 
-private struct CardSwipeEffect: ViewModifier {
-    let index: Int
-    let offsetX: CGFloat
-    let triggerThreshold: CGFloat
-
-    func body(content: Content) -> some View {
-        switch index {
-        case 0:
-            let angle = Angle(degrees: Double(offsetX) / 20)
-            content
-                .offset(x: offsetX)
-                .rotationEffect(angle, anchor: .bottom)
-                .zIndex(4)
-        case 1:
-            let progress = min(abs(offsetX) / triggerThreshold, 1)
-            content
-                .offset(y: CGFloat((1 - progress) * 50))
-                .scaleEffect(CGFloat(0.9 + progress * 0.1))
-                .zIndex(3)
-        case 2:
-            let progress = min(abs(offsetX) / triggerThreshold, 1)
-            content
-                .offset(y: CGFloat(110 - progress * 60))
-                .scaleEffect(CGFloat(0.8 + progress * 0.1))
-                .zIndex(2)
-        case 3:
-            let progress = min(abs(offsetX) / triggerThreshold, 1)
-            content
-                .opacity(progress)
-                .offset(y: CGFloat(180 - progress * 70))
-                .scaleEffect(CGFloat(0.7 + progress * 0.1))
-                .zIndex(1)
-        default:
-            content
-                .opacity(0)
-        }
+public extension CardSwipeView {
+    func triggerThreshold(_ newValue: CGFloat) -> CardSwipeView {
+        configuration.triggerThreshold = newValue
+        return self
     }
-}
-
-private struct CardAppearEffect: ViewModifier {
-    let appear: Bool
-    let index: Int
-
-    func body(content: Content) -> some View {
-        switch index {
-        case 0:
-            content
-        case 1:
-            content
-                .offset(y: CGFloat(appear ? 0 : -50))
-        case 2:
-            content
-                .offset(y: CGFloat(appear ? 0 : -110))
-        case 3:
-            content
-                .offset(y: CGFloat(appear ? 0 : -180))
-        default:
-            content
-        }
-    }
-}
-
-public enum CardSwipeDirection {
-    case left, right, idle
     
-    init (offset: CGFloat) {
-        if offset > 0 {
-            self = .right
-        } else if offset == 0 {
-            self = .idle
-        } else {
-            self = .left
-        }
+    func onSwipeEnd(_ newValue: @escaping (Item, CardSwipeDirection) -> Void) -> CardSwipeView {
+        configuration.onSwipeEnd = newValue
+        return self
+    }
+    
+    func onNoMoreCardsLeft(_ newValue: @escaping () -> Void) -> CardSwipeView {
+        configuration.onNoMoreCardsLeft = newValue
+        return self
     }
 }
