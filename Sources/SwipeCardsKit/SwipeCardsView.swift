@@ -15,6 +15,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
     @State private var poppedDirection: CardSwipeDirection = .idle
     @State private var lastDirection: CardSwipeDirection = .idle
     @State private var offsetX: CGFloat = 0
+    @State private var thresholdPassed = false
     
     private let content: (Item, _ fraction: CGFloat, _ isRight: CardSwipeDirection) -> Content
 
@@ -30,9 +31,18 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
         DragGesture(minimumDistance: 10)
             .onChanged { value in
                 offsetX = value.translation.width
+                
                 let newDirection = CardSwipeDirection(offset: offsetX)
                 if lastDirection != newDirection {
                     lastDirection = newDirection
+                }
+                
+                let thresholdReached = abs(offsetX) >= configuration.triggerThreshold
+                if thresholdReached != thresholdPassed {
+                    thresholdPassed = thresholdReached
+                    if thresholdReached {
+                        configuration.onThresholdPassed?()
+                    }
                 }
             }
             .onEnded { value in
@@ -126,6 +136,11 @@ public extension CardSwipeView {
     
     func onNoMoreCardsLeft(_ newValue: @escaping () -> Void) -> CardSwipeView {
         configuration.onNoMoreCardsLeft = newValue
+        return self
+    }
+    
+    func onThresholdPassed(_ newValue: @escaping () -> Void) -> CardSwipeView {
+        configuration.onThresholdPassed = newValue
         return self
     }
 }
