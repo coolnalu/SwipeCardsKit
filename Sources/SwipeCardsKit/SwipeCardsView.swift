@@ -28,7 +28,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
     }
 
     private var swipeGesture: some Gesture {
-        DragGesture(minimumDistance: 10)
+        DragGesture(minimumDistance: configuration.minimumDistance)
             .onChanged { value in
                 offsetX = value.translation.width
                 
@@ -124,8 +124,9 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
 }
 
 public extension CardSwipeView {
-    func triggerThreshold(_ newValue: CGFloat) -> CardSwipeView {
-        configuration.triggerThreshold = newValue
+    func configure(threshold: CGFloat, minimumDistance: CGFloat) -> CardSwipeView {
+        configuration.triggerThreshold = threshold
+        configuration.minimumDistance = minimumDistance
         return self
     }
     
