@@ -8,7 +8,7 @@ A lightweight, customizable SwiftUI library for creating Tinder-like swipeable c
 
 ## Features
 
-- 🔄 Smooth swipe animations with realistic physics
+- 🔄 Smooth swipe animations
 - 🎨 Fully customizable card appearance
 - 📱 iOS 15.0+ support
 - 🔌 Simple integration with SwiftUI
@@ -260,16 +260,7 @@ SwipeCardsKit automatically manages a stack of cards with a visually appealing d
 
 This creates a realistic card stack effect similar to popular dating apps.
 
-### Implementation Details
-
-The library uses SwiftUI's gesture system combined with custom animations to create a smooth, realistic card swiping experience. The `CardSwipeEffect` modifier handles the visual transformations of each card based on its position in the stack and the current swipe state.
-
-## Best Practices
-
-1. **Performance**: Keep your card content views as lightweight as possible for smooth animations
-2. **Card Size**: Use a consistent aspect ratio for your cards (the default is 2:3)
-3. **Feedback**: Provide visual feedback during swipes to indicate the action that will occur
-4. **Error Handling**: Always implement the `onNoMoreCardsLeft` callback to handle the empty state
+**The cards stack is a reusable component that renders only four card views at a time. You can utilize as many items as you desire as a source of truth.**
 
 ## License
 
