@@ -17,16 +17,16 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
     @State private var offsetX: CGFloat = 0
     @State private var thresholdPassed = false
     
-    private let content: (Item, _ fraction: CGFloat, _ isRight: CardSwipeDirection) -> Content
-
+    private let content: (Item, _ progress: CGFloat, _ isRight: CardSwipeDirection) -> Content
+    
     public init(
         items: [Item],
-        @ViewBuilder content: @escaping (Item, _ fraction: CGFloat, _ isRight: CardSwipeDirection) -> Content
+        @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ isRight: CardSwipeDirection) -> Content
     ) {
         self._items = State(wrappedValue: items)
         self.content = content
     }
-
+    
     private var swipeGesture: some Gesture {
         DragGesture(minimumDistance: configuration.minimumDistance)
             .onChanged { value in
@@ -61,13 +61,13 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
                 }
             }
     }
-
+    
     public var body: some View {
         ZStack {
             ForEach(Array(items.prefix(configuration.visibleCount).enumerated()), id: \.element.id) { index, item in
-                let fraction = index == 0 ? min(abs(offsetX) / configuration.triggerThreshold, 1) : 0
+                let progress = index == 0 ? min(abs(offsetX) / configuration.triggerThreshold, 1) : 0
                 
-                content(item, fraction, lastDirection)
+                content(item, progress, lastDirection)
                     .modifier(
                         CardSwipeEffect(
                             index: index,
