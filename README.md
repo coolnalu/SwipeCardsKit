@@ -150,7 +150,7 @@ Set the minimum distance a card needs to be swiped before it's considered a comp
 CardSwipeView(items: cards) { card, progress, direction in
     // Card content
 }
-.triggerThreshold(200) // Default is 150
+.configure(threshold: 200, minimumDistance: 10) // Default threshold is 150, minimum distance is 20
 ```
 
 ### Swipe Callbacks
@@ -175,6 +175,9 @@ CardSwipeView(items: cards) { card, progress, direction in
 .onNoMoreCardsLeft {
     // Handle when all cards are swiped
     print("No more cards left!")
+}
+.onThresholdPassed {
+    // Add custom effect, f.e. haptic feedback or sound
 }
 ```
 
