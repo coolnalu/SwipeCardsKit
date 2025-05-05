@@ -116,7 +116,7 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View
 ```swift
 public init(
     items: [Item],
-    @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ isRight: CardSwipeDirection) -> Content
+    @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ direction: CardSwipeDirection) -> Content
 )
 ```
 

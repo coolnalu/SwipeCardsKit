@@ -17,11 +17,11 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
     @State private var offsetX: CGFloat = 0
     @State private var thresholdPassed = false
     
-    private let content: (Item, _ progress: CGFloat, _ isRight: CardSwipeDirection) -> Content
+    private let content: (Item, _ progress: CGFloat, _ direction: CardSwipeDirection) -> Content
     
     public init(
         items: [Item],
-        @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ isRight: CardSwipeDirection) -> Content
+        @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ direction: CardSwipeDirection) -> Content
     ) {
         self._items = State(wrappedValue: items)
         self.content = content
