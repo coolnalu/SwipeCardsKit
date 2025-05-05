@@ -2,9 +2,16 @@
 
 A lightweight, customizable SwiftUI library for creating Tinder-like swipeable card interfaces in your iOS applications.
 
-https://github.com/user-attachments/assets/f3e58d0e-3d5a-45f5-8705-1b997c785acf
-
-https://github.com/user-attachments/assets/60cfa85d-0de3-4553-abf9-5fa77e2a7e80
+<table>
+  <tr>
+    <th>Example A</th>
+    <th>Example B</th>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/60cfa85d-0de3-4553-abf9-5fa77e2a7e80" alt="Animating cards inner properties"></td>
+    <td><img src="https://github.com/user-attachments/assets/f3e58d0e-3d5a-45f5-8705-1b997c785acf" alt="Overlaying the action indicator"></td>
+  </tr>
+</table>
 
 ## Features
 
