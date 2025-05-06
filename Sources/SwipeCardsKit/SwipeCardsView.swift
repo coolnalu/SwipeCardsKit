@@ -78,7 +78,6 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .aspectRatio(2/3, contentMode: .fit)
         .overlay {
             if let poppedItem {
                 content(poppedItem, 1, poppedDirection)
