@@ -17,13 +17,16 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
     @State private var offsetX: CGFloat = 0
     @State private var thresholdPassed = false
     
+    private let selectedItem: Binding<Item>
     private let content: (Item, _ progress: CGFloat, _ direction: CardSwipeDirection) -> Content
     
     public init(
         items: [Item],
+        selectedItem: Binding<Item>,
         @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ direction: CardSwipeDirection) -> Content
     ) {
         self._items = State(wrappedValue: items)
+        self.selectedItem = selectedItem
         self.content = content
     }
     
@@ -54,6 +57,9 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View {
                     poppedOffset = offsetX
                     poppedDirection = lastDirection
                     poppedItem = items.removeFirst()
+                    if let currentItem = items.first {
+                        selectedItem.wrappedValue = currentItem
+                    }
                     if let poppedItem {
                         configuration.onSwipeEnd?(poppedItem, lastDirection)
                     }
