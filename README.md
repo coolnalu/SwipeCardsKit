@@ -56,10 +56,12 @@ struct ContentView: View {
         Card(id: 4, title: "Card 4", color: .orange),
         Card(id: 5, title: "Card 5", color: .purple)
     ]
+    @State private var selectedCard: Card?
+    @State private var popTrigger: CardSwipeDirection?
     
     var body: some View {
         VStack {
-            CardSwipeView(items: cards) { card, progress, direction in
+            CardSwipeView(items: $cards, selectedItem: $selectedCard, popTrigger: $popTrigger) { card, progress, direction in
                 // Card content
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
@@ -115,12 +117,16 @@ public struct CardSwipeView<Item: Identifiable, Content: View>: View
 
 ```swift
 public init(
-    items: [Item],
+    items: Binding<[Item]>,
+    selectedItem: Binding<Item?> = .constant(nil),
+    popTrigger: Binding<CardSwipeDirection?> = .constant(nil),
     @ViewBuilder content: @escaping (Item, _ progress: CGFloat, _ direction: CardSwipeDirection) -> Content
 )
 ```
 
-- `items`: An array of items that conform to `Identifiable`
+- `items`: A binding to an array of items that conform to `Identifiable & Hashable`
+- `selectedItem`: An optional binding to track the currently displayed item (defaults to nil)
+- `popTrigger`: An optional binding to programmatically trigger a card swipe in a specific direction (defaults to nil)
 - `content`: A view builder that creates the content for each card
   - `item`: The current item being displayed
   - `progress`: A value between 0 and 1 indicating how far the card has been swiped
@@ -140,6 +146,8 @@ public enum CardSwipeDirection {
 - `.right`: The card was swiped to the right
 - `.idle`: The card is not being swiped or is at rest
 
+This enum can also be used with the `popTrigger` binding to programmatically trigger a swipe in a specific direction.
+
 ## Customization Options
 
 ### Trigger Threshold
@@ -147,7 +155,7 @@ public enum CardSwipeDirection {
 Set the minimum distance a card needs to be swiped before it's considered a complete swipe:
 
 ```swift
-CardSwipeView(items: cards) { card, progress, direction in
+CardSwipeView(items: $cards, selectedItem: $selectedCard) { card, progress, direction in
     // Card content
 }
 .configure(threshold: 200, minimumDistance: 10) // Default threshold is 150, minimum distance is 20
@@ -158,7 +166,7 @@ CardSwipeView(items: cards) { card, progress, direction in
 Register callbacks for swipe events:
 
 ```swift
-CardSwipeView(items: cards) { card, progress, direction in
+CardSwipeView(items: $cards, selectedItem: $selectedCard) { card, progress, direction in
     // Card content
 }
 .onSwipeEnd { card, direction in
@@ -172,23 +180,54 @@ CardSwipeView(items: cards) { card, progress, direction in
         print("Card returned to center")
     }
 }
-.onNoMoreCardsLeft {
-    // Handle when all cards are swiped
-    print("No more cards left!")
-}
 .onThresholdPassed {
-    // Add custom effect, f.e. haptic feedback or sound
+    // Called when a card passes the swipe threshold
+    print("Card passed threshold")
+    // Add haptic feedback or other effects
+    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
 }
 ```
 
 ## Advanced Usage
+
+### Programmatic Card Swiping
+
+You can programmatically trigger card swipes using the `popTrigger` binding:
+
+```swift
+struct ContentView: View {
+    @State private var cards = [Card(id: 1), Card(id: 2), Card(id: 3)]
+    @State private var selectedCard: Card?
+    @State private var popTrigger: CardSwipeDirection?
+    
+    var body: some View {
+        VStack {
+            CardSwipeView(items: $cards, selectedItem: $selectedCard, popTrigger: $popTrigger) { card, progress, direction in
+                // Card content
+            }
+            
+            HStack {
+                Button("Swipe Left") {
+                    popTrigger = .left
+                }
+                
+                Button("Swipe Right") {
+                    popTrigger = .right
+                }
+            }
+        }
+    }
+}
+```
+
+This is useful for implementing buttons that trigger swipes or for automating swipes based on certain conditions.
 
 ### Custom Card Appearance
 
 You have full control over the appearance of your cards:
 
 ```swift
-CardSwipeView(items: profiles) { profile, progress, direction in
+CardSwipeView(items: $profiles, selectedItem: $selectedProfile) { profile, progress, direction in
     VStack {
         Image(profile.imageName)
             .resizable()
@@ -236,6 +275,33 @@ SwipeCardsKit automatically manages a stack of cards with a visually appealing d
 This creates a realistic card stack effect similar to popular dating apps.
 
 **The cards stack is a reusable component that renders only four card views at a time. You can utilize as many items as you desire as a source of truth.**
+
+### Tracking the Current Card
+
+The `selectedItem` binding allows you to track which card is currently at the top of the stack:
+
+```swift
+struct ContentView: View {
+    @State private var cards = [Card(id: 1, title: "Card 1"), Card(id: 2, title: "Card 2")]
+    @State private var selectedCard: Card?
+    
+    var body: some View {
+        VStack {
+            CardSwipeView(items: $cards, selectedItem: $selectedCard) { card, progress, direction in
+                // Card content
+            }
+            
+            // Display information about the current card
+            if let selectedCard {
+                Text("Current card: \(selectedCard.title)")
+                    .padding()
+            }
+        }
+    }
+}
+```
+
+This is useful for displaying additional information about the current card or for synchronizing other UI elements with the card stack.
 
 ## License
 
