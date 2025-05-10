@@ -13,6 +13,7 @@ final class Configuration<Item: Identifiable> {
     var minimumDistance: CGFloat = 20
     var onSwipeEnd: ((Item, CardSwipeDirection) -> Void)?
     var onThresholdPassed: (() -> Void)?
+    var onNoMoreCardsLeft: (() -> Void)?
     let visibleCount = 4
     let screenWidth = { UIScreen.current?.bounds.width ?? 400 }()
 }

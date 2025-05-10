@@ -136,6 +136,10 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
             } completion: {
                 self.poppedItem = nil
                 self.poppedOffset = 0
+                
+                if items.isEmpty {
+                    configuration.onNoMoreCardsLeft?()
+                }
             }
         } else {
             withAnimation(.spring(duration: 0.5)) {
@@ -146,6 +150,10 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
                 try? await Task.sleep(nanoseconds: (1 * NSEC_PER_SEC) / 2)
                 
                 self.poppedItem = nil
+                
+                if items.isEmpty {
+                    configuration.onNoMoreCardsLeft?()
+                }
             }
         }
     }
@@ -172,6 +180,11 @@ public extension CardSwipeView {
     
     func onSwipeEnd(_ newValue: @escaping (Item, CardSwipeDirection) -> Void) -> CardSwipeView {
         configuration.onSwipeEnd = newValue
+        return self
+    }
+    
+    func onNoMoreCardsLeft(_ newValue: @escaping () -> Void) -> CardSwipeView {
+        configuration.onNoMoreCardsLeft = newValue
         return self
     }
     

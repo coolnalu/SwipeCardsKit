@@ -180,6 +180,10 @@ CardSwipeView(items: $cards, selectedItem: $selectedCard) { card, progress, dire
         print("Card returned to center")
     }
 }
+.onNoMoreCardsLeft {
+    // Handle when all cards are swiped
+    print("No more cards left!")
+}
 .onThresholdPassed {
     // Called when a card passes the swipe threshold
     print("Card passed threshold")
