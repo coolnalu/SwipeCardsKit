@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum CardSwipeDirection {
+public enum CardSwipeDirection: Sendable {
     case left, right, idle
     
     init (offset: CGFloat) {
