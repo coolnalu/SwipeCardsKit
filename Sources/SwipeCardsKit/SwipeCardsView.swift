@@ -10,10 +10,10 @@ import SwiftUI
 public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View {
     @State private var configuration = Configuration<Item>()
     @State private var poppedItem: Item?
-    @State private var poppedOffset: CGFloat = 0
+    @State private var poppedOffset: CGPoint = .zero
     @State private var poppedDirection: CardSwipeDirection = .idle
     @State private var lastDirection: CardSwipeDirection = .idle
-    @State private var offsetX: CGFloat = 0
+    @State private var offset: CGPoint = .zero
     @State private var thresholdPassed = false
     
     @Binding private var items: [Item]
@@ -35,7 +35,6 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
         self._selectedItem = selectedItem
         self._popTrigger = popTrigger
         self.content = content
-        self.selectedItem = self.items.first
     }
     
     private var swipeGesture: some Gesture {
@@ -46,7 +45,7 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
             .onEnded { value in
                 if abs(value.translation.width) < configuration.triggerThreshold {
                     withAnimation(.bouncy) {
-                        offsetX = 0
+                        offset = .zero
                     }
                 } else if !items.isEmpty {
                     popItem()
@@ -57,13 +56,13 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
     public var body: some View {
         ZStack {
             ForEach(Array(items.prefix(configuration.visibleCount).enumerated()), id: \.element.id) { index, item in
-                let progress = index == 0 ? min(abs(offsetX) / configuration.triggerThreshold, 1) : 0
+                let progress = index == 0 ? min(abs(offset.x) / configuration.triggerThreshold, 1) : 0
                 
                 content(item, progress, lastDirection)
                     .modifier(
                         CardSwipeEffect(
                             index: index,
-                            offsetX: offsetX,
+                            offset: offset,
                             triggerThreshold: configuration.triggerThreshold
                         )
                     )
@@ -72,6 +71,9 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay { poppedCard }
         .gesture(swipeGesture)
+        .onAppear {
+            selectedItem = items.first
+        }
         .onChange(of: popTrigger ?? .idle) { newValue in
             guard newValue != .idle else { return }
             lastDirection = newValue
@@ -83,11 +85,11 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
     @ViewBuilder
     var poppedCard: some View {
         if let poppedItem {
-            content(poppedItem, min(abs(poppedOffset) / configuration.triggerThreshold, 1), poppedDirection)
+            content(poppedItem, min(abs(poppedOffset.x) / configuration.triggerThreshold, 1), poppedDirection)
                 .modifier(
                     CardSwipeEffect(
                         index: 0,
-                        offsetX: poppedOffset,
+                        offset: poppedOffset,
                         triggerThreshold: configuration.triggerThreshold
                     )
                 )
@@ -101,7 +103,11 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
     func onDragChanged(_ value: DragGesture.Value) {
         let translation = value.translation.width
         let correction = correction(for: translation)
-        offsetX = translation + correction
+        let offsetX = translation + correction
+        let offsetY = configuration.animateOnYAxes
+            ? value.translation.height
+            : 0
+        offset = CGPoint(x: offsetX, y: offsetY)
         
         let newDirection = CardSwipeDirection(offset: offsetX)
         if lastDirection != newDirection {
@@ -132,10 +138,10 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
         
         if #available(iOS 17.0, *) {
             withAnimation(.spring(duration: 0.5)) {
-                poppedOffset += (screenWidth * multiplier)
+                poppedOffset.x += (screenWidth * multiplier)
             } completion: {
                 self.poppedItem = nil
-                self.poppedOffset = 0
+                self.poppedOffset = .zero
                 
                 if items.isEmpty {
                     configuration.onNoMoreCardsLeft?()
@@ -143,7 +149,7 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
             }
         } else {
             withAnimation(.spring(duration: 0.5)) {
-                poppedOffset += (screenWidth * multiplier)
+                poppedOffset.x += (screenWidth * multiplier)
             }
             
             Task {
@@ -160,21 +166,26 @@ public struct CardSwipeView<Item: Identifiable & Hashable, Content: View>: View 
     
     func popItem(notifyCaller: Bool = true) {
         guard !items.isEmpty else { return }
-        poppedOffset = offsetX
+        poppedOffset = offset
         poppedDirection = lastDirection
         poppedItem = items.removeFirst()
         selectedItem = items.first
         if let poppedItem, notifyCaller {
             configuration.onSwipeEnd?(poppedItem, lastDirection)
         }
-        offsetX = 0
+        offset = .zero
     }
 }
 
 public extension CardSwipeView {
-    func configure(threshold: CGFloat, minimumDistance: CGFloat) -> CardSwipeView {
+    func configure(
+        threshold: CGFloat,
+        minimumDistance: CGFloat,
+        animateOnYAxes: Bool
+    ) -> CardSwipeView {
         configuration.triggerThreshold = threshold
         configuration.minimumDistance = minimumDistance
+        configuration.animateOnYAxes = animateOnYAxes
         return self
     }
     

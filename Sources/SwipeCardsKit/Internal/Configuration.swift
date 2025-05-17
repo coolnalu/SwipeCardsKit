@@ -11,6 +11,7 @@ import SwiftUI
 final class Configuration<Item: Identifiable> {
     var triggerThreshold: CGFloat = 150
     var minimumDistance: CGFloat = 20
+    var animateOnYAxes: Bool = false
     var onSwipeEnd: ((Item, CardSwipeDirection) -> Void)?
     var onThresholdPassed: (() -> Void)?
     var onNoMoreCardsLeft: (() -> Void)?

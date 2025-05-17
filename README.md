@@ -158,7 +158,8 @@ Set the minimum distance a card needs to be swiped before it's considered a comp
 CardSwipeView(items: $cards, selectedItem: $selectedCard) { card, progress, direction in
     // Card content
 }
-.configure(threshold: 200, minimumDistance: 10) // Default threshold is 150, minimum distance is 20
+.configure(threshold: 200, minimumDistance: 10, animateOnYAxes: Bool)
+// Default threshold is 150, minimum distance is 20, animateOnYAxes is false (disabled)
 ```
 
 ### Swipe Callbacks
