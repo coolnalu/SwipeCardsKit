@@ -161,6 +161,9 @@ CardSwipeView(items: $cards, selectedItem: $selectedCard) { card, progress, dire
 .configure(threshold: 200, minimumDistance: 10, animateOnYAxes: Bool)
 // Default threshold is 150, minimum distance is 20, animateOnYAxes is false (disabled)
 ```
+### Animate on Y axes
+
+If you prefer a card to follow the touch on the Y axis, pass the true value in the configure method.
 
 ### Swipe Callbacks
 
